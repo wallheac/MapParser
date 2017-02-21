@@ -1,3 +1,4 @@
+package MapFile;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,11 +37,7 @@ import com.google.gson.JsonParser;
  * open file
  * load contents as string
  * parse string for answers 
- * 		use square brackets as index to create a substring
- * 		then parse substring by quotation marks
- * 		put those substrings in array
- * 
- */
+*/
 	
 
 public class MapFile {
@@ -66,24 +63,34 @@ public class MapFile {
 			e.printStackTrace();
 		}
 		
-		//System.out.println(fullFile + " end");
 		
 		//map JSON within string
 		//THIS HAS PROBLEMS IF STUDENT SUBMITS EMPTY FILE. throws exception
 		try{
-    	Map<String, Object> stuff = (new Gson()).fromJson(fullFile, Map.class);
-	    Map<String, Object> groups = (Map<String,Object>) stuff.get("groups");
-	    Collection<Object> colors = groups.values();
-	    Map<String, Object> oneColor = (Map<String, Object>) colors.iterator().next();
-	    
-        answers = (ArrayList<String>) oneColor.get("paths");
+	    	Map<String, Object> stuff = (new Gson()).fromJson(fullFile, Map.class);
+		    Map<String, Object> groups = (Map<String,Object>) stuff.get("groups");
+		    Collection<Object> colors = groups.values();
+		    
+		    //colors is a collection that may contain more than one object
+		    //accounting for students who use more than one color
+		    ArrayList<String> allAnswers = new ArrayList<String>();
+		    Iterator<Object> itr = colors.iterator();
+		    
+	    	while(itr.hasNext()){
+		    	Map<String, Object> oneColor = (Map<String, Object>) itr.next();
+		    	ArrayList tempAnswers =(ArrayList<String>) oneColor.get("paths");
+		    	allAnswers.addAll(tempAnswers);
+	    	}
+	    	this.answers = allAnswers;
+	    		    
 		} catch (NoSuchElementException e){
 			e.printStackTrace();
 		}
         
         String joined = String.join(", ", answers);
         System.out.println(joined);     
-        }
+      
+	}
 	
 	
 	
@@ -92,10 +99,10 @@ public static void main (String[] args){
 	ArrayList<MapFile> maps = new ArrayList<MapFile>();
 		
 	//filename should eventually be variable
-	Path keydir = Paths.get("C:\\Users\\amy\\Documents\\W CIV\\Lindenwood\\Fall 16\\BBC keys\\wallhermfechtelA10-13.txt");
+	Path keydir = Paths.get("C:\\Users\\amy\\Documents\\W CIV\\Lindenwood\\Sp 17\\BBC keys\\Awallhermfechtel02-16.txt");
 	MapFile key =  new MapFile(keydir);
 	//eventually, the last two folders in the path should be entered by the user
-	Path dir = Paths.get("C:\\Users\\amy\\Documents\\W CIV\\Lindenwood\\Fall 16\\bbc canvas\\23\\submissions10-13");
+	Path dir = Paths.get("C:\\Users\\amy\\Documents\\W CIV\\Lindenwood\\Sp 17\\bbc canvas\\submissions02-16");
 			try 
 			{
 				DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.{txt,json}"); 
@@ -109,11 +116,9 @@ public static void main (String[] args){
 			     System.err.println(e);
 			     }
 		Iterator<MapFile> itr = maps.iterator();
-		Iterator<String> keyitr = key.answers.iterator();
 		int count = 0;
 		int pointsPossible = 10;
 		int factor = 0;
-		//float fl = (float)key.answers.size()/5;
 		factor = (int) Math.rint((float)key.answers.size()/5);
 		
 		System.out.println(factor);
